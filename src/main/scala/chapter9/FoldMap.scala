@@ -67,9 +67,9 @@ object FoldMapCats extends App {
     , L[_] : Traverse
     , G[_] : Applicative // Should be replaced with a type class that handles parallel computations 
     , A
-    , B : Monoid] (batches: L[F[A]]) (f: A => B): G[B] = {
+    , B : Monoid] (batches: L[F[A]]) (f: A => B) (delay: B => G[B]): G[B] = {
 
-      def processBatch (batch: F[A]): G[B] = Applicative[G].pure {
+      def processBatch (batch: F[A]): G[B] = delay {
         foldMap (batch) (f)
       } 
 
@@ -83,7 +83,7 @@ object FoldMapCats extends App {
     val cores = Runtime.getRuntime().availableProcessors()
     val n = (values.size.toDouble / cores).ceil.toInt
     val batches = values.grouped(n).toVector
-    parFoldMap[Vector, Vector, Future, A, B](batches)(f)
+    parFoldMap(batches)(f)(Future(_))
   }
 
   val result: Future[Int] =
