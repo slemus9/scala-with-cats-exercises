@@ -71,7 +71,7 @@ object FoldMapCats extends App {
 
       def processBatch (batch: F[A]): G[B] = delay {
         foldMap (batch) (f)
-      } 
+      }
 
       batches.traverse(processBatch).map(
         foldMap (_) (identity)
@@ -83,7 +83,7 @@ object FoldMapCats extends App {
     val cores = Runtime.getRuntime().availableProcessors()
     val n = (values.size.toDouble / cores).ceil.toInt
     val batches = values.grouped(n).toVector
-    parFoldMap(batches)(f)(Future(_))
+    parFoldMap (batches) (f) (Future(_))
   }
 
   val result: Future[Int] =
